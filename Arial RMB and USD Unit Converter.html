@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 320px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #4f46e5;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        input {
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus {
+            border-color: #4f46e5;
+        }
+
+        input:disabled {
+            background: #f5f5f5;
+            color: #888;
+        }
+
+        .rate-info {
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+        }
+
+        #mainheader {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #1e1b4b;
+        }
+
+        .bottomStuff {
+            font-size: 11px;
+            font-weight: 400;
+            text-align: center;
+            color: #aaa;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="mainheader">Arial RMB to USD Converter</h1>
+    <div class="card">
+        <button id="convertToUSD" style="display: none;">RMB to USD</button>
+        <button id="convertToRMB">USD to RMB</button>
+
+        <input disabled id="display">
+        <input id="inputValue" placeholder="Type Amount Here">
+        <span class="rate-info" id="rateInfo"></span>
+    </div>
+    <h6 class="bottomStuff">&copy; Arial Tools Cooperation</h6>
+    <h6 class="bottomStuff">This program is fully written and operated by Jamie Tan</h6>
+
+    <script type="module">
+        const ctUSD = document.getElementById("convertToUSD");
+        const ctRMB = document.getElementById("convertToRMB");
+        const display = document.getElementById("display");
+        const inputValue = document.getElementById("inputValue");
+        const rateInfo = document.getElementById("rateInfo");
+
+        async function getRate(base, quote) {
+            const res = await fetch(`https://api.frankfurter.dev/v2/rates?base=${base}&quotes=${quote}`);
+            const data = await res.json();
+            return data[0].rate;
+        }
+
+        const rateRMB = await getRate("USD", "CNY");
+        const rateUSD = await getRate("CNY", "USD");
+
+        rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY`;
+
+        inputValue.addEventListener("keydown", (e) => {
+            const allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
+            if (allowed.includes(e.key)) return;
+            if (e.key === "." && !inputValue.value.includes(".")) return;
+            if (!/^\d$/.test(e.key)) e.preventDefault();
+        });
+
+        inputValue.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData("text");
+            const cleaned = pasted.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
+            inputValue.value = cleaned;
+            inputValue.dispatchEvent(new Event("input"));
+        });
+
+        const liveConvertToRMB = () => {
+            const value = Number(inputValue.value);
+            display.value = isNaN(value) ? "" : (value * rateRMB).toFixed(2);
+        };
+
+        const liveConvertToUSD = () => {
+            const value = Number(inputValue.value);
+            display.value = isNaN(value) ? "" : (value * rateUSD).toFixed(2);
+        };
+
+        inputValue.addEventListener("input", liveConvertToRMB);
+
+        function ctRMBPressed() {
+            ctUSD.style.display = "inline-block";
+            ctRMB.style.display = "none";
+
+            inputValue.removeEventListener("input", liveConvertToRMB);
+            inputValue.addEventListener("input", liveConvertToUSD);
+
+            inputValue.placeholder = "Type RMB Amount Here";
+            rateInfo.textContent = `1 CNY = ${rateUSD.toFixed(4)} USD`;
+            liveConvertToUSD();
+        }
+
+        function ctUSDPressed() {
+            ctRMB.style.display = "inline-block";
+            ctUSD.style.display = "none";
+
+            inputValue.removeEventListener("input", liveConvertToUSD);
+            inputValue.addEventListener("input", liveConvertToRMB);
+
+            inputValue.placeholder = "Type USD Amount Here";
+            rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY`;
+            liveConvertToRMB();
+        }
+
+        ctRMB.addEventListener("click", ctRMBPressed);
+        ctUSD.addEventListener("click", ctUSDPressed);
+    </script>
+
+</body>
+
+</html>
