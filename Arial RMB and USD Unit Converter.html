@@ -117,7 +117,7 @@
         const rateRMB = await getRate("USD", "CNY");
         const rateUSD = await getRate("CNY", "USD");
 
-        rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY`;
+        rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY (Up To Date)`;
 
         inputValue.addEventListener("keydown", (e) => {
             const allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"];
@@ -154,7 +154,7 @@
             inputValue.addEventListener("input", liveConvertToUSD);
 
             inputValue.placeholder = "Type RMB Amount Here";
-            rateInfo.textContent = `1 CNY = ${rateUSD.toFixed(4)} USD`;
+            rateInfo.textContent = `1 CNY = ${rateUSD.toFixed(4)} USD (Up To Date)`;
             liveConvertToUSD();
         }
 
@@ -166,7 +166,7 @@
             inputValue.addEventListener("input", liveConvertToRMB);
 
             inputValue.placeholder = "Type USD Amount Here";
-            rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY`;
+            rateInfo.textContent = `1 USD = ${rateRMB.toFixed(4)} CNY (Up To Date)`;
             liveConvertToRMB();
         }
 
